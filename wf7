@@ -1,0 +1,467 @@
+
+import { useState } from "react";
+import "./App.css";
+
+// Part A: Conditional Rendering
+function UserGreeting() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  return (
+    <section className="card">
+      <h2>1. Conditional Rendering</h2>
+
+      {/* Ternary operator */}
+      {isLoggedIn ? (
+        <h3>Welcome back, User!</h3>
+      ) : (
+        <h3>Please log in to continue.</h3>
+      )}
+
+      <button onClick={() => setIsLoggedIn(!isLoggedIn)}>
+        {isLoggedIn ? "Log Out" : "Log In"}
+      </button>
+    </section>
+  );
+}
+
+function LoadingIndicator() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  // if-else approach
+  let content;
+  if (isLoading) {
+    content = <p>Content is loading...</p>;
+  } else {
+    content = <p>Content loaded successfully!</p>;
+  }
+
+  return (
+    <section className="card">
+      <h2>Loading Indicator</h2>
+
+      {/* && operator */}
+      {isLoading && <div className="spinner"></div>}
+
+      {content}
+
+      <button onClick={() => setIsLoading(!isLoading)}>
+        {isLoading ? "Finish Loading" : "Load Again"}
+      </button>
+    </section>
+  );
+}
+
+// Part B: Rendering Lists
+function TodoList() {
+  const [todos, setTodos] = useState([
+    { id: 1, text: "Learn React", completed: false },
+    { id: 2, text: "Practice JSX", completed: true },
+  ]);
+  const [task, setTask] = useState("");
+
+  function addTodo(e) {
+    e.preventDefault();
+    if (!task.trim()) return;
+
+    setTodos([
+      ...todos,
+      {
+        id: Date.now(),
+        text: task.trim(),
+        completed: false,
+      },
+    ]);
+    setTask("");
+  }
+
+  function removeTodo(id) {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  }
+
+  function toggleTodo(id) {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id
+          ? { ...todo, completed: !todo.completed }
+          : todo
+      )
+    );
+  }
+
+  return (
+    <section className="card">
+      <h2>2. Todo List</h2>
+
+      <form onSubmit={addTodo} className="todo-form">
+        <input
+          value={task}
+          onChange={(e) => setTask(e.target.value)}
+          placeholder="Enter a task"
+          aria-label="New task"
+          required
+        />
+        <button type="submit">Add Task</button>
+      </form>
+
+      <ul className="todo-list">
+        {todos.map((todo) => (
+          <li key={todo.id}>
+            <label className={todo.completed ? "completed" : ""}>
+              <input
+                type="checkbox"
+                checked={todo.completed}
+                onChange={() => toggleTodo(todo.id)}
+              />
+              {todo.text}
+            </label>
+            <button
+              type="button"
+              className="remove-btn"
+              onClick={() => removeTodo(todo.id)}
+            >
+              Remove
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {todos.length === 0 && <p>No tasks available.</p>}
+    </section>
+  );
+}
+
+// Part C: Registration Form
+function RegistrationForm() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    gender: "",
+    interests: [],
+    country: "",
+    bio: "",
+  });
+
+  const [submitted, setSubmitted] = useState(null);
+  const [error, setError] = useState("");
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setError("");
+  }
+
+  function handleInterest(e) {
+    const { value, checked } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      interests: checked
+        ? [...prev.interests, value]
+        : prev.interests.filter((item) => item !== value),
+    }));
+    setError("");
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (
+      !formData.name.trim() ||
+      !formData.email.trim() ||
+      !formData.password ||
+      !formData.gender ||
+      formData.interests.length === 0 ||
+      !formData.country ||
+      !formData.bio.trim()
+    ) {
+      setError("Please complete all fields and select an interest.");
+      return;
+    }
+
+    setSubmitted({ ...formData });
+    setError("");
+  }
+
+  return (
+    <section className="card">
+      <h2>3. Registration Form</h2>
+
+      <form onSubmit={handleSubmit}>
+        <label>
+          Name
+          <input
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <label>
+          Email
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <label>
+          Password
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <fieldset>
+          <legend>Gender</legend>
+          {["Male", "Female", "Other"].map((item) => (
+            <label className="inline-option" key={item}>
+              <input
+                type="radio"
+                name="gender"
+                value={item}
+                checked={formData.gender === item}
+                onChange={handleChange}
+                required
+              />
+              {item}
+            </label>
+          ))}
+        </fieldset>
+
+        <fieldset>
+          <legend>Interests (select at least one)</legend>
+          {["Reading", "Music", "Sports"].map((item) => (
+            <label className="inline-option" key={item}>
+              <input
+                type="checkbox"
+                value={item}
+                checked={formData.interests.includes(item)}
+                onChange={handleInterest}
+              />
+              {item}
+            </label>
+          ))}
+        </fieldset>
+
+        <label>
+          Country
+          <select
+            name="country"
+            value={formData.country}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select country</option>
+            <option value="India">India</option>
+            <option value="USA">USA</option>
+            <option value="UK">UK</option>
+          </select>
+        </label>
+
+        <label>
+          Bio
+          <textarea
+            name="bio"
+            value={formData.bio}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        {error && <p className="error">{error}</p>}
+
+        <button type="submit">Register</button>
+      </form>
+
+      {submitted && (
+        <div className="success">
+          <h3>Registration Successful!</h3>
+          <p><strong>Name:</strong> {submitted.name}</p>
+          <p><strong>Email:</strong> {submitted.email}</p>
+          <p><strong>Gender:</strong> {submitted.gender}</p>
+          <p><strong>Interests:</strong> {submitted.interests.join(", ")}</p>
+          <p><strong>Country:</strong> {submitted.country}</p>
+          <p><strong>Bio:</strong> {submitted.bio}</p>
+          <p>Password received (hidden for privacy).</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+export default function App() {
+  return (
+    <main className="container">
+      <h1>React Rendering and Forms</h1>
+      <UserGreeting />
+      <LoadingIndicator />
+      <TodoList />
+      <RegistrationForm />
+    </main>
+  );
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f3f6fa;
+  color: #222;
+}
+
+.container {
+  width: min(850px, 92%);
+  margin: 30px auto;
+}
+
+h1 {
+  text-align: center;
+  color: #174ea6;
+}
+
+.card {
+  background: white;
+  padding: 22px;
+  margin: 20px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #00000015;
+}
+
+h2 {
+  color: #174ea6;
+}
+
+button {
+  background: #1769d2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0c4fa8;
+}
+
+form label {
+  display: block;
+  margin: 12px 0;
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #bbb;
+  border-radius: 5px;
+}
+
+fieldset {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin: 15px 0;
+}
+
+.inline-option {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 5px;
+  margin-right: 18px !important;
+}
+
+.todo-form {
+  display: flex;
+  gap: 10px;
+}
+
+.todo-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+.todo-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.todo-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.todo-list li label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: #777;
+}
+
+.remove-btn {
+  background: #d93025;
+}
+
+.remove-btn:hover {
+  background: #a51d15;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 4px solid #ddd;
+  border-top-color: #1769d2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  color: #c5221f;
+}
+
+.success {
+  margin-top: 20px;
+  padding: 16px;
+  background: #e6f4ea;
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 500px) {
+  .todo-form {
+    flex-direction: column;
+  }
+
+  .todo-list li {
+    align-items: flex-start;
+  }
+}
